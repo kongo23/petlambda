@@ -1,0 +1,27 @@
+version: '3.0'
+
+services:
+  localstack:
+    image: localstack/localstack:0.14.3
+    networks:
+      - local
+    healthcheck:
+      test: awslocal dynamodb list-tables
+      interval: 3s
+      timeout: 10s
+      retries: 5
+    ports:
+      - 4566:4566
+    environment:
+      - SERVICES=sns,sqs,dynamodb,dynamodbstreams,iam,lambda
+      - LAMBDA_EXECUTOR=docker
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - LAMBDA_DOCKER_NETWORK=liveordersoutboxrelay_local
+      - HOSTNAME_FROM_LAMBDA=localstack
+      - DEFAULT_REGION=us-east-1
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+networks:
+  local:
+    driver: bridge
